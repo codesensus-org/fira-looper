@@ -1,0 +1,53 @@
+{
+  "name": "fira-looper",
+  "author": "Aurélien Garnier <aurelien@garnier.dev>",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint --fix .",
+    "format": "prettier --write .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@morpho-org/blue-sdk": "^5.11.0",
+    "@morpho-org/blue-sdk-viem": "^4.2.1",
+    "@morpho-org/blue-sdk-wagmi": "^3.1.3",
+    "@morpho-org/morpho-test": "^2.4.4",
+    "@morpho-org/morpho-ts": "^2.4.6",
+    "@morpho-org/simulation-sdk-wagmi": "^3.1.3",
+    "@morpho-org/test": "^2.6.6",
+    "@paraswap/sdk": "^7.3.1",
+    "@tailwindcss/vite": "^4.1.18",
+    "@tanstack/react-query": "^5.90.17",
+    "@types/node": "^25.0.8",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "viem": "^2.44.2",
+    "vitest": "^4.0.17",
+    "wagmi": "^3.3.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@types/react": "^19.2.8",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.2",
+    "autoprefixer": "^10.4.23",
+    "eslint": "^9.39.2",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.26",
+    "globals": "^17.0.0",
+    "knip": "^5.82.1",
+    "postcss": "^8.5.6",
+    "prettier": "^3.8.0",
+    "tailwindcss": "^4.1.18",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.53.0",
+    "vite": "^7.3.1"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+}

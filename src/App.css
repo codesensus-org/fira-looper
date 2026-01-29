@@ -1,0 +1,33 @@
+#root {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+table {
+  width: 100%;
+}
+
+th,
+td {
+  width: 50%;
+}
+
+img {
+  width: 40px;
+  height: 40px;
+}
+
+.flex {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.flex > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex > div > div:last-child {
+  font-size: 12px;
+}
