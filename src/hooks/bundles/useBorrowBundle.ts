@@ -1,6 +1,6 @@
 import { AccrualPosition } from "@morpho-org/blue-sdk";
 import { useCallback } from "react";
-import { encodeFunctionData, erc20Abi, formatUnits, maxUint256 } from "viem";
+import { encodeFunctionData, erc20Abi, formatEther, maxUint256 } from "viem";
 import { useWalletClient } from "wagmi";
 import { BUNDLER, bundlerAbi } from "../../utils/adapters/bundler";
 import { doTransfer, doTransferFrom } from "../../utils/actions/transfer";
@@ -10,7 +10,7 @@ import { doSupplyCollateral } from "../../utils/actions/collateral";
 import { doBorrow } from "../../utils/actions/borrow";
 import { FIRA_ADAPTER } from "../../utils/adapters/fira";
 import { PARASWAP_ADAPTER } from "../../utils/adapters/paraswap";
-import { multicall, sendTransaction } from "viem/actions";
+import { readContract, sendTransaction } from "viem/actions";
 import { doAuthorize } from "../../utils/actions/authorize";
 import { MARKET_PARAMS } from "../../utils/params";
 
@@ -31,37 +31,19 @@ export function useBorrowBundle(position?: AccrualPosition, amount?: bigint) {
 
     const { collateralToken, loanToken } = MARKET_PARAMS;
 
-    const [underlyingBalance, loanBalance, decimals] = await multicall(client, {
-      contracts: [
-        {
-          address: collateralToken,
-          abi: erc20Abi,
-          functionName: "balanceOf",
-          args: [client.account.address],
-        },
-        {
-          address: loanToken,
-          abi: erc20Abi,
-          functionName: "balanceOf",
-          args: [client.account.address],
-        },
-        {
-          address: loanToken,
-          abi: erc20Abi,
-          functionName: "decimals",
-        },
-      ],
-      allowFailure: false,
+    const underlyingBalance = await readContract(client, {
+      address: collateralToken,
+      abi: erc20Abi,
+      functionName: "balanceOf",
+      args: [client.account.address],
     });
 
-    console.log(`Borrowing: ${formatUnits(amount, decimals)}`);
+    console.log(`Borrowing: ${formatEther(amount)}`);
 
     let borrowAmount = amount;
     if (borrowAmount > position.market.liquidity) {
       borrowAmount = position.market.liquidity;
-      console.log(
-        `Capped at liquidity: ${formatUnits(borrowAmount, decimals)}`,
-      );
+      console.log(`Capped at liquidity: ${formatEther(borrowAmount)}`);
     }
 
     const swap = await doSell(
@@ -69,7 +51,7 @@ export function useBorrowBundle(position?: AccrualPosition, amount?: bigint) {
       loanToken,
       collateralToken,
       FIRA_ADAPTER,
-      borrowAmount + loanBalance,
+      borrowAmount,
       slippage,
     );
 
@@ -86,12 +68,6 @@ export function useBorrowBundle(position?: AccrualPosition, amount?: bigint) {
               collateralToken,
               FIRA_ADAPTER,
               underlyingBalance,
-            ),
-            await doTransferFrom(
-              client,
-              loanToken,
-              PARASWAP_ADAPTER,
-              loanBalance,
             ),
             doFlashLoan(
               loanToken,

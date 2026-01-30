@@ -1,6 +1,6 @@
 import { AccrualPosition } from "@morpho-org/blue-sdk";
 import { useCallback } from "react";
-import { encodeFunctionData, erc20Abi, formatUnits, maxUint256 } from "viem";
+import { encodeFunctionData, formatEther, maxUint256 } from "viem";
 import { useWalletClient } from "wagmi";
 import { BUNDLER, bundlerAbi } from "../../utils/adapters/bundler";
 import { doFlashLoan } from "../../utils/actions/flash-loan";
@@ -11,10 +11,10 @@ import {
 } from "../../utils/actions/collateral";
 import { doRepay } from "../../utils/actions/borrow";
 import { FIRA_ADAPTER } from "../../utils/adapters/fira";
-import { multicall, sendTransaction } from "viem/actions";
+import { sendTransaction } from "viem/actions";
 import { doAuthorize } from "../../utils/actions/authorize";
 import { PARASWAP_ADAPTER } from "../../utils/adapters/paraswap";
-import { doTransfer, doTransferFrom } from "../../utils/actions/transfer";
+import { doTransfer } from "../../utils/actions/transfer";
 import { skipRevert } from "../../utils/actions";
 import { MARKET_PARAMS } from "../../utils/params";
 
@@ -35,31 +35,14 @@ export function useRepayBundle(position?: AccrualPosition, amount?: bigint) {
 
     const { collateralToken, loanToken } = MARKET_PARAMS;
 
-    const [loanBalance, decimals] = await multicall(client, {
-      contracts: [
-        {
-          address: loanToken,
-          abi: erc20Abi,
-          functionName: "balanceOf",
-          args: [client.account.address],
-        },
-        {
-          address: loanToken,
-          abi: erc20Abi,
-          functionName: "decimals",
-        },
-      ],
-      allowFailure: false,
-    });
-
-    console.log(`Repaying: ${formatUnits(amount, decimals)}`);
+    console.log(`Repaying: ${formatEther(amount)}`);
 
     const swap = await doBuy(
       client,
       collateralToken,
       loanToken,
       FIRA_ADAPTER,
-      amount - loanBalance,
+      amount,
       slippage,
     );
 
@@ -73,15 +56,9 @@ export function useRepayBundle(position?: AccrualPosition, amount?: bigint) {
         args: [
           [
             await doAuthorize(client, FIRA_ADAPTER, true),
-            await doTransferFrom(
-              client,
-              loanToken,
-              FIRA_ADAPTER,
-              loanBalance,
-            ),
             doFlashLoan(
               loanToken,
-              amount - loanBalance,
+              amount,
               [
                 doRepay(
                   MARKET_PARAMS,
