@@ -214,6 +214,7 @@ Default slippage is set to 0.01% in the bundle hooks. Adjust in:
 ## Known Limitations
 
 - Doesn't work until a GeneralAdapter1 is deployed for Fira
+- Uses the market oracle to price collateral rather than actual swap rate
 - Uses the Morpho SDK which has incompatible market params
 - Market params are hardcoded and should ideally be fetched on-chain
 - Currently supports a single predefined market (UZR)
