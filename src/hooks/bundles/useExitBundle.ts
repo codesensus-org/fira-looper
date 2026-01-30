@@ -6,13 +6,14 @@ import { BUNDLER, bundlerAbi } from "../../utils/adapters/bundler";
 import { doBuy } from "../../utils/actions/paraswap";
 import { doWithdrawCollateral } from "../../utils/actions/collateral";
 import { doRepay } from "../../utils/actions/borrow";
-import { GENERAL_ADAPTER_1 } from "../../utils/adapters/general";
+import { FIRA_ADAPTER } from "../../utils/adapters/fira";
 import { sendTransaction } from "viem/actions";
 import { doAuthorize } from "../../utils/actions/authorize";
 import { PARASWAP_ADAPTER } from "../../utils/adapters/paraswap";
 import { doFlashLoan } from "../../utils/actions/flash-loan";
 import { doTransfer } from "../../utils/actions/transfer";
 import { skipRevert } from "../../utils/actions";
+import { MARKET_PARAMS } from "../../utils/params";
 
 const slippage = 1n; // 0.01%
 
@@ -24,7 +25,7 @@ export function useExitBundle(position?: AccrualPosition) {
       return undefined;
     }
 
-    const { collateralToken, loanToken } = position.market.params;
+    const { collateralToken, loanToken } = MARKET_PARAMS;
 
     const amount =
       (position.borrowAssets * (10_000n + slippage) + 10_000n - 1n) / 10_000n;
@@ -33,7 +34,7 @@ export function useExitBundle(position?: AccrualPosition) {
       client,
       collateralToken,
       loanToken,
-      GENERAL_ADAPTER_1,
+      FIRA_ADAPTER,
       amount,
       slippage,
     );
@@ -47,20 +48,20 @@ export function useExitBundle(position?: AccrualPosition) {
         functionName: "multicall",
         args: [
           [
-            await doAuthorize(client, GENERAL_ADAPTER_1, true),
+            await doAuthorize(client, FIRA_ADAPTER, true),
             doFlashLoan(
               collateralToken,
               limitAmount,
               [
                 doTransfer(
                   collateralToken,
-                  GENERAL_ADAPTER_1,
+                  FIRA_ADAPTER,
                   PARASWAP_ADAPTER,
                   limitAmount,
                 ),
                 swap,
                 doRepay(
-                  position.market.params,
+                  MARKET_PARAMS,
                   0n,
                   position.borrowShares,
                   position.market.toBorrowAssets(
@@ -69,9 +70,9 @@ export function useExitBundle(position?: AccrualPosition) {
                   client.account.address,
                 ),
                 doWithdrawCollateral(
-                  position.market.params,
+                  MARKET_PARAMS,
                   position.collateral,
-                  GENERAL_ADAPTER_1,
+                  FIRA_ADAPTER,
                 ),
 
                 // Recover leftover dust
@@ -79,7 +80,7 @@ export function useExitBundle(position?: AccrualPosition) {
                   doTransfer(
                     collateralToken,
                     PARASWAP_ADAPTER,
-                    GENERAL_ADAPTER_1,
+                    FIRA_ADAPTER,
                     maxUint256,
                   ),
                 ),
@@ -87,7 +88,7 @@ export function useExitBundle(position?: AccrualPosition) {
             ),
             doTransfer(
               collateralToken,
-              GENERAL_ADAPTER_1,
+              FIRA_ADAPTER,
               client.account.address,
               maxUint256,
             ),
@@ -96,7 +97,7 @@ export function useExitBundle(position?: AccrualPosition) {
             skipRevert(
               doTransfer(
                 loanToken,
-                GENERAL_ADAPTER_1,
+                FIRA_ADAPTER,
                 client.account.address,
                 maxUint256,
               ),

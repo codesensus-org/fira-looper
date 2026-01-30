@@ -10,11 +10,9 @@ import { useExitBundle } from "../hooks/bundles/useExitBundle";
 import { Smoothen } from "./Smoothen";
 import { useAccrueInterest } from "../hooks/useAccrueInterest";
 import { Countdown } from "./Countdown";
+import { MARKET_ID, MARKET_PARAMS } from "../utils/params";
 
-const FIRA_BASE_URL = "https://app.fira.money/migrate#";
-const MARKET_ID =
-  "0xa597b5a36f6cc0ede718ba58b2e23f5c747da810bf8e299022d88123ab03340e" as const;
-const LLTV = parseEther("0.9999"); // TODO: Fetch on-chain
+export const FIRA_BASE_URL = "https://app.fira.money/migrate#";
 
 export function Leverage() {
   const { address } = useConnection();
@@ -24,7 +22,7 @@ export function Leverage() {
   const position = useAccrueInterest(useAccrualPosition(address, MARKET_ID));
 
   const { data: collateralBalance } = useReadContract({
-    address: position?.market.params.collateralToken,
+    address: MARKET_PARAMS.collateralToken,
     abi: erc20Abi,
     functionName: "balanceOf",
     args: [address ?? zeroAddress],
@@ -35,7 +33,7 @@ export function Leverage() {
 
   const marketName =
     position !== undefined
-      ? `${shorten(position.market.params.collateralToken)}/${shorten(position.market.params.loanToken)}`
+      ? `${shorten(MARKET_PARAMS.collateralToken)}/${shorten(MARKET_PARAMS.loanToken)}`
       : undefined;
 
   const { equity, targetBorrow } = useMemo(() => {
@@ -93,7 +91,7 @@ export function Leverage() {
               <p>
                 Token:{" "}
                 {position !== undefined
-                  ? shorten(position.market.params.collateralToken)
+                  ? shorten(MARKET_PARAMS.collateralToken)
                   : "Loading..."}
               </p>
               <p>
@@ -102,7 +100,7 @@ export function Leverage() {
                   ? formatEther(collateralBalance)
                   : "Loading..."}{" "}
                 {position !== undefined
-                  ? shorten(position.market.params.collateralToken)
+                  ? shorten(MARKET_PARAMS.collateralToken)
                   : undefined}
               </p>
               <p>
@@ -114,7 +112,7 @@ export function Leverage() {
                   decimals={18}
                   symbol={
                     position !== undefined
-                      ? shorten(position.market.params.collateralToken)
+                      ? shorten(MARKET_PARAMS.collateralToken)
                       : undefined
                   }
                 />
@@ -126,7 +124,7 @@ export function Leverage() {
                   decimals={18}
                   symbol={
                     position !== undefined
-                      ? shorten(position.market.params.loanToken)
+                      ? shorten(MARKET_PARAMS.loanToken)
                       : undefined
                   }
                 />
@@ -161,7 +159,7 @@ export function Leverage() {
                   decimals={18}
                   symbol={
                     position !== undefined
-                      ? shorten(position.market.params.loanToken)
+                      ? shorten(MARKET_PARAMS.loanToken)
                       : undefined
                   }
                 />
@@ -172,7 +170,7 @@ export function Leverage() {
                   ? formatEther(position.market.liquidity)
                   : "Loading..."}{" "}
                 {position !== undefined
-                  ? shorten(position.market.params.loanToken)
+                  ? shorten(MARKET_PARAMS.loanToken)
                   : undefined}
               </p>
             </td>
@@ -181,8 +179,8 @@ export function Leverage() {
       </table>
 
       <Controls
-        maxLTV={position?.market.params.lltv ?? 0n}
-        liquidationLTV={LLTV}
+        maxLTV={MARKET_PARAMS.ltv ?? 0n}
+        liquidationLTV={MARKET_PARAMS.lltv}
         targetLTV={targetLTV ?? position?.ltv ?? 0n}
         setTargetLTV={setTargetLTV}
       />
@@ -190,7 +188,7 @@ export function Leverage() {
       <div>
         Liquidation ETA:{" "}
         <Countdown
-          maxLTV={position?.market.params.lltv}
+          maxLTV={MARKET_PARAMS.lltv}
           targetLTV={targetLTV ?? (position?.ltv !== null ? position?.ltv : 0n)}
           borrowApy={
             position !== undefined

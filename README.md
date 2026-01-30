@@ -215,7 +215,7 @@ Default slippage is set to 0.01% in the bundle hooks. Adjust in:
 
 - Doesn't work until a GeneralAdapter1 is deployed for Fira
 - Uses the Morpho SDK which has incompatible market params
-- LLTV is hardcoded and should ideally be fetched on-chain
+- Market params are hardcoded and should ideally be fetched on-chain
 - Currently supports a single predefined market (UZR)
 
 ## Security Considerations

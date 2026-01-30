@@ -8,10 +8,11 @@ import { doFlashLoan } from "../../utils/actions/flash-loan";
 import { doSell } from "../../utils/actions/paraswap";
 import { doSupplyCollateral } from "../../utils/actions/collateral";
 import { doBorrow } from "../../utils/actions/borrow";
-import { GENERAL_ADAPTER_1 } from "../../utils/adapters/general";
+import { FIRA_ADAPTER } from "../../utils/adapters/fira";
 import { PARASWAP_ADAPTER } from "../../utils/adapters/paraswap";
 import { multicall, sendTransaction } from "viem/actions";
 import { doAuthorize } from "../../utils/actions/authorize";
+import { MARKET_PARAMS } from "../../utils/params";
 
 const slippage = 1n; // 0.01%
 
@@ -28,7 +29,7 @@ export function useBorrowBundle(position?: AccrualPosition, amount?: bigint) {
       return undefined;
     }
 
-    const { collateralToken, loanToken } = position.market.params;
+    const { collateralToken, loanToken } = MARKET_PARAMS;
 
     const [underlyingBalance, loanBalance, decimals] = await multicall(client, {
       contracts: [
@@ -67,7 +68,7 @@ export function useBorrowBundle(position?: AccrualPosition, amount?: bigint) {
       client,
       loanToken,
       collateralToken,
-      GENERAL_ADAPTER_1,
+      FIRA_ADAPTER,
       borrowAmount + loanBalance,
       slippage,
     );
@@ -79,11 +80,11 @@ export function useBorrowBundle(position?: AccrualPosition, amount?: bigint) {
         functionName: "multicall",
         args: [
           [
-            await doAuthorize(client, GENERAL_ADAPTER_1, true),
+            await doAuthorize(client, FIRA_ADAPTER, true),
             await doTransferFrom(
               client,
               collateralToken,
-              GENERAL_ADAPTER_1,
+              FIRA_ADAPTER,
               underlyingBalance,
             ),
             await doTransferFrom(
@@ -98,24 +99,24 @@ export function useBorrowBundle(position?: AccrualPosition, amount?: bigint) {
               [
                 doTransfer(
                   loanToken,
-                  GENERAL_ADAPTER_1,
+                  FIRA_ADAPTER,
                   PARASWAP_ADAPTER,
                   borrowAmount,
                 ),
                 swap,
                 doSupplyCollateral(
-                  position.market.params,
+                  MARKET_PARAMS,
                   maxUint256,
                   client.account.address,
                 ),
                 doBorrow(
-                  position.market.params,
+                  MARKET_PARAMS,
                   borrowAmount,
                   0n,
                   position.market.toBorrowAssets(
                     (10_000n - slippage) * 10n ** 23n,
                   ),
-                  GENERAL_ADAPTER_1,
+                  FIRA_ADAPTER,
                 ),
               ].flat(),
             ),

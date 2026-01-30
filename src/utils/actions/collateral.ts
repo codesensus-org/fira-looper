@@ -1,18 +1,18 @@
 import { Address, encodeFunctionData, zeroHash } from "viem";
 import { Call } from ".";
-import { GENERAL_ADAPTER_1, generalAdapter1Abi } from "../adapters/general";
-import { InputMarketParams } from "@morpho-org/blue-sdk";
+import { FIRA_ADAPTER, firaAdapterAbi } from "../adapters/fira";
+import { MarketParams } from "../params";
 
 export function doSupplyCollateral(
-  market: InputMarketParams,
+  market: MarketParams,
   assets: bigint,
   onBehalf: Address,
 ): Call {
   return {
-    to: GENERAL_ADAPTER_1,
+    to: FIRA_ADAPTER,
     data: encodeFunctionData({
-      abi: generalAdapter1Abi,
-      functionName: "morphoSupplyCollateral",
+      abi: firaAdapterAbi,
+      functionName: "firaSupplyCollateral",
       args: [market, assets, onBehalf, "0x"],
     }),
     value: 0n,
@@ -22,15 +22,15 @@ export function doSupplyCollateral(
 }
 
 export function doWithdrawCollateral(
-  market: InputMarketParams,
+  market: MarketParams,
   assets: bigint,
   receiver: Address,
 ): Call {
   return {
-    to: GENERAL_ADAPTER_1,
+    to: FIRA_ADAPTER,
     data: encodeFunctionData({
-      abi: generalAdapter1Abi,
-      functionName: "morphoWithdrawCollateral",
+      abi: firaAdapterAbi,
+      functionName: "firaWithdrawCollateral",
       args: [market, assets, receiver],
     }),
     value: 0n,

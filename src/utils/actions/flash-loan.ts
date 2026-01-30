@@ -1,6 +1,6 @@
 import { Address, encodeFunctionData, keccak256, sliceHex } from "viem";
 import { Call } from ".";
-import { GENERAL_ADAPTER_1, generalAdapter1Abi } from "../adapters/general";
+import { FIRA_ADAPTER, firaAdapterAbi } from "../adapters/fira";
 import { bundlerAbi } from "../adapters/bundler";
 
 export function doFlashLoan(
@@ -18,10 +18,10 @@ export function doFlashLoan(
   );
 
   return {
-    to: GENERAL_ADAPTER_1,
+    to: FIRA_ADAPTER,
     data: encodeFunctionData({
-      abi: generalAdapter1Abi,
-      functionName: "morphoFlashLoan",
+      abi: firaAdapterAbi,
+      functionName: "firaFlashLoan",
       args: [token, amount, data],
     }),
     value: 0n,

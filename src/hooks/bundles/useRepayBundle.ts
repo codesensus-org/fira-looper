@@ -10,12 +10,13 @@ import {
   doWithdrawCollateral,
 } from "../../utils/actions/collateral";
 import { doRepay } from "../../utils/actions/borrow";
-import { GENERAL_ADAPTER_1 } from "../../utils/adapters/general";
+import { FIRA_ADAPTER } from "../../utils/adapters/fira";
 import { multicall, sendTransaction } from "viem/actions";
 import { doAuthorize } from "../../utils/actions/authorize";
 import { PARASWAP_ADAPTER } from "../../utils/adapters/paraswap";
 import { doTransfer, doTransferFrom } from "../../utils/actions/transfer";
 import { skipRevert } from "../../utils/actions";
+import { MARKET_PARAMS } from "../../utils/params";
 
 const slippage = 1n; // 0.01%
 
@@ -32,7 +33,7 @@ export function useRepayBundle(position?: AccrualPosition, amount?: bigint) {
       return undefined;
     }
 
-    const { collateralToken, loanToken } = position.market.params;
+    const { collateralToken, loanToken } = MARKET_PARAMS;
 
     const [loanBalance, decimals] = await multicall(client, {
       contracts: [
@@ -57,7 +58,7 @@ export function useRepayBundle(position?: AccrualPosition, amount?: bigint) {
       client,
       collateralToken,
       loanToken,
-      GENERAL_ADAPTER_1,
+      FIRA_ADAPTER,
       amount - loanBalance,
       slippage,
     );
@@ -71,11 +72,11 @@ export function useRepayBundle(position?: AccrualPosition, amount?: bigint) {
         functionName: "multicall",
         args: [
           [
-            await doAuthorize(client, GENERAL_ADAPTER_1, true),
+            await doAuthorize(client, FIRA_ADAPTER, true),
             await doTransferFrom(
               client,
               loanToken,
-              GENERAL_ADAPTER_1,
+              FIRA_ADAPTER,
               loanBalance,
             ),
             doFlashLoan(
@@ -83,7 +84,7 @@ export function useRepayBundle(position?: AccrualPosition, amount?: bigint) {
               amount - loanBalance,
               [
                 doRepay(
-                  position.market.params,
+                  MARKET_PARAMS,
                   amount,
                   0n,
                   position.market.toBorrowAssets(
@@ -92,7 +93,7 @@ export function useRepayBundle(position?: AccrualPosition, amount?: bigint) {
                   client.account.address,
                 ),
                 doWithdrawCollateral(
-                  position.market.params,
+                  MARKET_PARAMS,
                   limitAmount,
                   PARASWAP_ADAPTER,
                 ),
@@ -105,18 +106,18 @@ export function useRepayBundle(position?: AccrualPosition, amount?: bigint) {
               [
                 doTransfer(
                   loanToken,
-                  GENERAL_ADAPTER_1,
+                  FIRA_ADAPTER,
                   client.account.address,
                   maxUint256,
                 ),
                 doTransfer(
                   collateralToken,
                   PARASWAP_ADAPTER,
-                  GENERAL_ADAPTER_1,
+                  FIRA_ADAPTER,
                   maxUint256,
                 ),
                 doSupplyCollateral(
-                  position.market.params,
+                  MARKET_PARAMS,
                   maxUint256,
                   client.account.address,
                 ),
